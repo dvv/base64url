@@ -6,7 +6,7 @@ Standalone [URL safe](http://tools.ietf.org/html/rfc4648) base64-compatible code
 Usage
 --------------
 
-Safe base64-encoding:
+URL-Safe base64 encoding:
 ```erlang
 base64url:encode(<<255,127,254,252>>).
 <<"_3_-_A">>
@@ -14,10 +14,18 @@ base64url:decode(<<"_3_-_A">>).
 <<255,127,254,252>>
 ```
 
-Vanilla base64-encoding:
+Vanilla base64 encoding:
 ```erlang
 base64:encode(<<255,127,254,252>>).
 <<"/3/+/A==">>
+```
+
+Some systems in the wild use base64 URL encoding, but keep the padding for MIME compatibility (base64 Content-Transfer-Encoding). To interact with such systems, use:
+```erlang
+base64url:encode_mime(<<255,127,254,252>>).
+<<"_3_-_A==">>
+base64url:decode(<<"_3_-_A==">>).
+<<255,127,254,252>>
 ```
 
 Thanks

@@ -11,7 +11,8 @@
 
 -export([
     decode/1,
-    encode/1
+    encode/1,
+    encode_mime/1
   ]).
 
 -spec encode(
@@ -22,6 +23,14 @@ encode(Bin) when is_binary(Bin) ->
   << << (urlencode_digit(D)) >> || <<D>> <= base64:encode(Bin), D =/= $= >>;
 encode(L) when is_list(L) ->
   encode(iolist_to_binary(L)).
+
+-spec encode_mime(
+    binary() | iolist()
+  ) -> binary().
+encode_mime(Bin) when is_binary(Bin) ->
+    << << (urlencode_digit(D)) >> || <<D>> <= base64:encode(Bin) >>;
+encode_mime(L) when is_list(L) ->
+    encode_mime(iolist_to_binary(L)).
 
 -spec decode(
     binary() | iolist()
@@ -57,19 +66,33 @@ aim_test() ->
   % this codec produce URL safe output
   ?assertEqual(
       binary:match(encode([255,127,254,252]), [<<"=">>, <<"/">>, <<"+">>]),
+      nomatch),
+  % the mime codec produces URL unsafe output, but only because of padding
+  ?assertEqual(
+      binary:match(encode_mime([255,127,254,252]), [<<"/">>, <<"+">>]),
+      nomatch),
+  ?assertNotEqual(
+      binary:match(encode_mime([255,127,254,252]), [<<"=">>]),
       nomatch).
 
 codec_test() ->
-  % codec is lossless even without padding
+  % codec is lossless with or without padding
   ?assertEqual(decode(encode(<<"foo">>)), <<"foo">>),
   ?assertEqual(decode(encode(<<"foo1">>)), <<"foo1">>),
   ?assertEqual(decode(encode(<<"foo12">>)), <<"foo12">>),
-  ?assertEqual(decode(encode(<<"foo123">>)), <<"foo123">>).
+  ?assertEqual(decode(encode(<<"foo123">>)), <<"foo123">>),
+  ?assertEqual(decode(encode_mime(<<"foo">>)), <<"foo">>),
+  ?assertEqual(decode(encode_mime(<<"foo1">>)), <<"foo1">>),
+  ?assertEqual(decode(encode_mime(<<"foo12">>)), <<"foo12">>),
+  ?assertEqual(decode(encode_mime(<<"foo123">>)), <<"foo123">>).
 
 iolist_test() ->
   % codec supports iolists
   ?assertEqual(decode(encode("foo")), <<"foo">>),
   ?assertEqual(decode(encode(["fo", "o1"])), <<"foo1">>),
-  ?assertEqual(decode(encode([255,127,254,252])), <<255,127,254,252>>).
+  ?assertEqual(decode(encode([255,127,254,252])), <<255,127,254,252>>),
+  ?assertEqual(decode(encode_mime("foo")), <<"foo">>),
+  ?assertEqual(decode(encode_mime(["fo", "o1"])), <<"foo1">>),
+  ?assertEqual(decode(encode_mime([255,127,254,252])), <<255,127,254,252>>).
 
 -endif.
