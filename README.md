@@ -1,6 +1,8 @@
 Base64Url
 ==============
 
+[![Hex.pm](https://img.shields.io/hexpm/v/base64url.svg)](https://hex.pm/packages/base64url)
+
 Standalone [URL safe](http://tools.ietf.org/html/rfc4648) base64-compatible codec.
 
 Usage
