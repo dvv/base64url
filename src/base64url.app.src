@@ -1,6 +1,6 @@
 {application, base64url, [
   {description, "URL safe base64-compatible codec"},
-  {vsn, "0.0.1"},
+  {vsn, "1.0.1"},
   {id, "git"},
   {registered, []},
   {applications, [
